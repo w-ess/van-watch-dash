@@ -1,6 +1,6 @@
 import { useVehicleData } from '@/hooks/useVehicleData';
 import { StatCard } from '@/components/StatCard';
-import { Truck, Gauge, Fuel, Zap, Activity } from 'lucide-react';
+import { Truck, Gauge, Thermometer, AlertTriangle, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
@@ -11,15 +11,17 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const activeVehicles = vehicles.filter(v => v.status === 'on').length;
     const avgSpeed = vehicles.reduce((acc, v) => acc + v.speed, 0) / vehicles.length;
-    const avgFuel = vehicles.reduce((acc, v) => acc + v.fuel, 0) / vehicles.length;
-    const vehiclesWithFault = vehicles.filter(v => v.injectionStatus === 'fault').length;
+    const avgTemp = vehicles.reduce((acc, v) => acc + v.engineTemp, 0) / vehicles.length;
+    const avgRpm = vehicles.reduce((acc, v) => acc + v.rpm, 0) / vehicles.length;
+    const totalDTCs = vehicles.reduce((acc, v) => acc + v.dtcCodes.length, 0);
 
     return {
       total: vehicles.length,
       active: activeVehicles,
       avgSpeed: avgSpeed.toFixed(1),
-      avgFuel: avgFuel.toFixed(1),
-      faults: vehiclesWithFault,
+      avgTemp: avgTemp.toFixed(1),
+      avgRpm: Math.round(avgRpm),
+      dtcs: totalDTCs,
     };
   }, [vehicles]);
 
@@ -53,15 +55,15 @@ export default function Dashboard() {
           icon={Gauge}
         />
         <StatCard
-          title="Combustível Médio"
-          value={`${stats.avgFuel}%`}
-          icon={Fuel}
+          title="Temperatura Média"
+          value={`${stats.avgTemp}°C`}
+          icon={Thermometer}
         />
         <StatCard
-          title="Alertas Ativos"
-          value={stats.faults}
-          icon={Zap}
-          trend={{ value: 12, isPositive: false }}
+          title="Códigos DTC"
+          value={stats.dtcs}
+          icon={AlertTriangle}
+          trend={stats.dtcs > 0 ? { value: stats.dtcs, isPositive: false } : undefined}
         />
       </div>
 
@@ -129,7 +131,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold">{vehicle.speed} km/h</p>
-                    <p className="text-xs text-muted-foreground">{vehicle.fuel.toFixed(0)}% comb.</p>
+                    <p className="text-xs text-muted-foreground">{vehicle.rpm} RPM</p>
                   </div>
                 </div>
               ))}

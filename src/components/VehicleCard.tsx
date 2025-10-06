@@ -1,7 +1,7 @@
 import { Vehicle } from '@/lib/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Gauge, Fuel, Thermometer, Activity } from 'lucide-react';
+import { Gauge, Zap, Thermometer, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -68,14 +68,21 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
           
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Fuel className="h-4 w-4 text-primary" />
+              <Zap className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Combustível</p>
-              <p className="text-sm font-semibold">{vehicle.fuel.toFixed(0)}%</p>
+              <p className="text-xs text-muted-foreground">Throttle</p>
+              <p className="text-sm font-semibold">{vehicle.throttlePosition.toFixed(0)}%</p>
             </div>
           </div>
         </div>
+        {vehicle.dtcCodes.length > 0 && (
+          <div className="mt-4 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+            <p className="text-xs font-medium text-destructive">
+              ⚠️ {vehicle.dtcCodes.length} código(s) de falha
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

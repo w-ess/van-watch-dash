@@ -71,6 +71,7 @@ export default function Settings() {
                   <SelectItem value="all">Todos os veículos</SelectItem>
                   <SelectItem value="on">Apenas ligados</SelectItem>
                   <SelectItem value="off">Apenas desligados</SelectItem>
+                  <SelectItem value="dtc">Com códigos DTC</SelectItem>
                 </SelectContent>
               </Select>
             </div>

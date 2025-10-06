@@ -14,18 +14,17 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 import { useMemo } from 'react';
-import { AlertTriangle, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Activity } from 'lucide-react';
 
 export default function Statistics() {
   const vehicles = useVehicleData();
 
-  const consumptionData = useMemo(() => {
+  const speedData = useMemo(() => {
     return vehicles.map((v) => ({
       name: v.id,
-      consumption: v.instantConsumption,
+      speed: v.speed,
     }));
   }, [vehicles]);
 
@@ -49,15 +48,15 @@ export default function Statistics() {
     });
   }, [vehicles]);
 
-  const topSpeeds = useMemo(() => {
+  const topRPM = useMemo(() => {
     return [...vehicles]
-      .sort((a, b) => b.speed - a.speed)
+      .sort((a, b) => b.rpm - a.rpm)
       .slice(0, 5);
   }, [vehicles]);
 
   const alerts = useMemo(() => {
     return vehicles.filter(
-      (v) => v.injectionStatus === 'fault' || v.engineTemp > 105 || v.fuel < 15
+      (v) => v.dtcCodes.length > 0 || v.engineTemp > 105
     );
   }, [vehicles]);
 
@@ -71,11 +70,11 @@ export default function Statistics() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Consumo Médio por Veículo</CardTitle>
+            <CardTitle>Velocidade Atual por Veículo (OBD-II)</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={consumptionData}>
+              <BarChart data={speedData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="name"
@@ -93,7 +92,7 @@ export default function Statistics() {
                     borderRadius: '8px',
                   }}
                 />
-                <Bar dataKey="consumption" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="speed" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -173,13 +172,13 @@ export default function Statistics() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Top 5 Velocidades do Dia
+              <Activity className="h-5 w-5 text-primary" />
+              Top 5 Maior RPM Atual
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topSpeeds.map((vehicle, index) => (
+              {topRPM.map((vehicle, index) => (
                 <div
                   key={vehicle.id}
                   className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
@@ -194,7 +193,7 @@ export default function Statistics() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-bold text-primary">{vehicle.speed} km/h</p>
+                    <p className="text-xl font-bold text-primary">{vehicle.rpm} RPM</p>
                   </div>
                 </div>
               ))}
@@ -206,7 +205,7 @@ export default function Statistics() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Alertas Ativos ({alerts.length})
+              Alertas OBD-II ({alerts.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -226,19 +225,14 @@ export default function Statistics() {
                       <p className="text-sm text-muted-foreground">{vehicle.model}</p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      {vehicle.injectionStatus === 'fault' && (
+                      {vehicle.dtcCodes.length > 0 && (
                         <Badge variant="destructive" className="text-xs">
-                          Falha Injeção
+                          {vehicle.dtcCodes.length} DTC(s)
                         </Badge>
                       )}
                       {vehicle.engineTemp > 105 && (
                         <Badge variant="destructive" className="text-xs">
                           Temp. Alta
-                        </Badge>
-                      )}
-                      {vehicle.fuel < 15 && (
-                        <Badge variant="destructive" className="text-xs">
-                          Comb. Baixo
                         </Badge>
                       )}
                     </div>

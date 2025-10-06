@@ -8,11 +8,11 @@ import {
   Gauge,
   Activity,
   Thermometer,
-  Fuel,
-  Droplet,
+  Zap,
   Battery,
   AlertTriangle,
-  TrendingUp,
+  Wind,
+  Clock,
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
@@ -106,14 +106,14 @@ export default function VehicleDetail() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Consumo</p>
+                <p className="text-sm text-muted-foreground">Throttle</p>
                 <p className="text-3xl font-bold text-foreground mt-2">
-                  {vehicle.instantConsumption.toFixed(1)}
+                  {vehicle.throttlePosition.toFixed(0)}
                 </p>
-                <p className="text-sm text-muted-foreground">km/l</p>
+                <p className="text-sm text-muted-foreground">%</p>
               </div>
               <div className="p-3 rounded-xl bg-primary/10">
-                <TrendingUp className="h-6 w-6 text-primary" />
+                <Zap className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -141,45 +141,38 @@ export default function VehicleDetail() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-medium text-muted-foreground">Combustível</p>
-              <Fuel className="h-5 w-5 text-primary" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{vehicle.fuel.toFixed(0)}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${vehicle.fuel}%` }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-medium text-muted-foreground">Pressão do Óleo</p>
-              <Droplet className="h-5 w-5 text-primary" />
-            </div>
-            <div className="space-y-2">
-              <span className="text-2xl font-bold">{vehicle.oilPressure.toFixed(1)}</span>
-              <p className="text-sm text-muted-foreground">PSI</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-medium text-muted-foreground">Bateria</p>
+              <p className="text-sm font-medium text-muted-foreground">Tensão Sistema</p>
               <Battery className="h-5 w-5 text-primary" />
             </div>
             <div className="space-y-2">
-              <span className="text-2xl font-bold">{vehicle.battery.toFixed(1)}V</span>
-              <p className="text-sm text-muted-foreground">Voltagem</p>
+              <span className="text-2xl font-bold">{vehicle.systemVoltage.toFixed(1)}V</span>
+              <p className="text-sm text-muted-foreground">Sistema Elétrico</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-medium text-muted-foreground">MAF Sensor</p>
+              <Wind className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <span className="text-2xl font-bold">{vehicle.mafSensor.toFixed(1)}</span>
+              <p className="text-sm text-muted-foreground">g/s (fluxo de ar)</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-medium text-muted-foreground">Ignition Timing</p>
+              <Clock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <span className="text-2xl font-bold">{vehicle.ignitionTiming.toFixed(1)}°</span>
+              <p className="text-sm text-muted-foreground">BTDC</p>
             </div>
           </CardContent>
         </Card>
@@ -188,7 +181,7 @@ export default function VehicleDetail() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Histórico de Velocidade</CardTitle>
+            <CardTitle>Histórico de Velocidade (OBD-II)</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -224,7 +217,43 @@ export default function VehicleDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Consumo Médio</CardTitle>
+            <CardTitle>Histórico de RPM</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={historicalData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="time"
+                  stroke="hsl(var(--muted-foreground))"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="rpm"
+                  stroke="hsl(var(--chart-2))"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Variação Throttle Position</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -246,8 +275,44 @@ export default function VehicleDetail() {
                     borderRadius: '8px',
                   }}
                 />
-                <Bar dataKey="consumption" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="throttle" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
               </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Temperatura do Motor (°C)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={historicalData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="time"
+                  stroke="hsl(var(--muted-foreground))"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="engineTemp"
+                  stroke="hsl(var(--chart-4))"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -257,26 +322,52 @@ export default function VehicleDetail() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-primary" />
-            Status da Injeção Eletrônica
+            Códigos de Diagnóstico (DTC)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <Badge
-              variant={vehicle.injectionStatus === 'normal' ? 'default' : 'destructive'}
-              className={cn(
-                'text-sm px-4 py-2',
-                vehicle.injectionStatus === 'normal' && 'bg-success'
-              )}
-            >
-              {vehicle.injectionStatus === 'normal' ? 'Normal' : 'Falha Detectada'}
-            </Badge>
-            {vehicle.injectionStatus === 'fault' && (
-              <p className="text-sm text-destructive">
-                Recomenda-se verificação técnica imediata
+          {vehicle.dtcCodes.length === 0 ? (
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-success/10 border border-success/20">
+              <Badge className="bg-success text-white">Normal</Badge>
+              <p className="text-sm text-muted-foreground">
+                Nenhum código de falha detectado via OBD-II
               </p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                <Badge variant="destructive" className="text-sm px-4 py-2">
+                  {vehicle.dtcCodes.length} Falha(s) Detectada(s)
+                </Badge>
+                <p className="text-sm text-destructive">
+                  Recomenda-se verificação técnica imediata
+                </p>
+              </div>
+              <div className="grid gap-2">
+                {vehicle.dtcCodes.map((code, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-destructive" />
+                      <span className="font-mono font-bold text-destructive">{code}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {code === 'P0300' && 'Falha de ignição aleatória'}
+                      {code === 'P0171' && 'Sistema muito pobre (Bank 1)'}
+                      {code === 'P0420' && 'Eficiência do catalisador abaixo do limite'}
+                      {code === 'P0301' && 'Falha de ignição no cilindro 1'}
+                      {code === 'P0128' && 'Temperatura do líquido de arrefecimento'}
+                      {code === 'P0442' && 'Pequeno vazamento no sistema EVAP'}
+                      {code === 'P0455' && 'Grande vazamento no sistema EVAP'}
+                      {code === 'P0174' && 'Sistema muito pobre (Bank 2)'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
